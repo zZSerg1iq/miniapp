@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создание этапа</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -148,26 +150,29 @@
             height: 300px;
             background: #e9ecef;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin-bottom: 15px;
             position: relative;
         }
 
-        .map-marker {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #dc3545;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 8px;
         }
 
         .map-instructions {
             text-align: center;
             color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .coordinates-display {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: monospace;
             font-size: 14px;
         }
 
@@ -281,14 +286,14 @@
 
         <!-- Контент для типа "Гео точка" -->
         <div id="geo-content" class="stage-content">
-            <div class="map-container" id="map">
-                <div class="map-instructions">
-                    Нажмите на карту, чтобы установить метку
-                </div>
+            <div class="map-instructions">
+                Нажмите на карту, чтобы установить метку. Вы можете перемещать метку, перетаскивая её.
             </div>
-            <div class="form-group">
-                <label>Координаты:</label>
-                <input type="text" id="coordinates" placeholder="Координаты появятся здесь после выбора точки" readonly>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            <div class="coordinates-display" id="coordinates">
+                Координаты: не выбраны
             </div>
             <button type="button" class="btn btn-success" id="send-geo-btn" disabled>📤 Отправить</button>
         </div>
@@ -352,6 +357,8 @@
         // 📝 Логика формы
         let selectedType = null;
         let markerCoordinates = null;
+        let map = null;
+        let marker = null;
         let answerOptionsCount = 2;
 
         function showStatus(text, type) {
@@ -387,6 +394,11 @@
             const contentEl = document.getElementById(`${type}-content`);
             if (contentEl) {
                 contentEl.style.display = 'block';
+                
+                // Инициализируем карту, если выбран тип "geo"
+                if (type === 'geo' && !map) {
+                    initMap();
+                }
             }
         }
 
@@ -441,37 +453,46 @@
         }
 
         function initMap() {
-            const map = document.getElementById('map');
-            const coordinatesInput = document.getElementById('coordinates');
-            const sendBtn = document.getElementById('send-geo-btn');
+            // Инициализация карты с центром на Москве
+            map = L.map('map').setView([55.7558, 37.6173], 13);
+            
+            // Добавление слоя карты OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
             
             // Обработчик клика по карте
-            map.addEventListener('click', function(e) {
-                // Удаляем существующую метку
-                const existingMarker = document.querySelector('.map-marker');
-                if (existingMarker) {
-                    existingMarker.remove();
+            map.on('click', function(e) {
+                const { lat, lng } = e.latlng;
+                
+                // Удаляем существующую метку, если есть
+                if (marker) {
+                    map.removeLayer(marker);
                 }
                 
-                // Создаем новую метку
-                const marker = document.createElement('div');
-                marker.className = 'map-marker';
-                marker.style.left = e.offsetX + 'px';
-                marker.style.top = e.offsetY + 'px';
-                map.appendChild(marker);
+                // Создаем новую метку с возможностью перетаскивания
+                marker = L.marker([lat, lng], {draggable: true}).addTo(map);
                 
-                // Сохраняем координаты (в реальном приложении здесь будет преобразование в реальные координаты)
-                markerCoordinates = {
-                    x: e.offsetX,
-                    y: e.offsetY
-                };
+                // Обновляем координаты при перемещении метки
+                marker.on('dragend', function() {
+                    const position = marker.getLatLng();
+                    updateCoordinatesDisplay(position.lat, position.lng);
+                });
                 
-                // Обновляем поле координат
-                coordinatesInput.value = `X: ${e.offsetX}, Y: ${e.offsetY}`;
+                // Обновляем отображение координат
+                updateCoordinatesDisplay(lat, lng);
+                
+                // Сохраняем координаты
+                markerCoordinates = { lat, lng };
                 
                 // Активируем кнопку отправки
-                sendBtn.disabled = false;
+                document.getElementById('send-geo-btn').disabled = false;
             });
+        }
+
+        function updateCoordinatesDisplay(lat, lng) {
+            const coordinatesElement = document.getElementById('coordinates');
+            coordinatesElement.textContent = `Координаты: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         }
 
         function validateRiddleForm() {
@@ -557,8 +578,7 @@
                 sendData(data);
             });
 
-            // Инициализация карты для "Гео точки"
-            initMap();
+            // Обработчики для формы "Гео точка"
             document.getElementById('send-geo-btn').addEventListener('click', () => {
                 const data = {
                     type: 'geo',
