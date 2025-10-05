@@ -88,13 +88,14 @@ function sendData(data) {
             showStatus('Отправка...', 'loading');
             tg.sendData(JSON.stringify(data));
             showStatus('✅ Данные отправлены!', 'success');
+            console.log('Данные успешно отправлены:', data);
         } catch (error) {
             console.error('Ошибка отправки:', error);
             showStatus('❌ Ошибка при отправке', 'error');
         }
     } else {
         showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
-        console.log('Данные для отправки:', data);
+        console.log('Данные для отправки (вне Telegram):', data);
     }
 }
 
