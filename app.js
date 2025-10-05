@@ -116,37 +116,18 @@ window.sendData = function(data) {
         data.userName = `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim();
     }
     
-    // Добавляем информацию о платформе
-    data.platform = tg ? tg.platform : 'browser';
-    data.language = tg ? tg.language : navigator.language;
-    
-    // Обработка файловых данных для предотвращения переполнения
-    if (data.file && data.file.data && data.file.data.length > 50000) {
-        // Для очень больших base64 данных оставляем только метаданные
-        data.file.data = null;
-        data.file.message = 'Data omitted due to size';
-    }
+    // Логируем что отправляем
+    console.log('📤 Отправляемые данные:', {
+        ...data,
+        file: data.file ? `[Telegram File: ${data.file.fileName}]` : null
+    });
     
     if (tg) {
         try {
             showStatus('Отправка данных в Telegram...', 'loading');
-            
-            // Отправляем через Telegram WebApp
             tg.sendData(JSON.stringify(data));
-            
             showStatus('✅ Данные отправлены! Закрываю приложение...', 'success');
             
-            console.log('Данные успешно отправлены:', {
-                ...data,
-                file: data.file ? {
-                    name: data.file.name,
-                    size: data.file.size,
-                    type: data.file.type,
-                    encoding: data.file.encoding
-                } : null
-            });
-            
-            // Закрываем приложение через 2 секунды
             setTimeout(() => {
                 tg.close();
             }, 2000);
@@ -156,15 +137,8 @@ window.sendData = function(data) {
             showStatus('❌ Ошибка при отправке', 'error');
         }
     } else {
-        // Режим вне Telegram
         showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
         console.log('Данные для отправки (вне Telegram):', data);
-        
-        // Показываем данные в alert для демонстрации
-        alert('Данные для отправки:\n' + JSON.stringify({
-            ...data,
-            file: data.file ? `[File: ${data.file.name}]` : null
-        }, null, 2));
     }
 }
 
