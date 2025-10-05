@@ -245,10 +245,21 @@ textarea:focus, input[type="text"]:focus, input[type="number"]:focus {
     font-size: 14px;
 }
 
+/* Стили для статусов файлов */
 .file-info {
     margin-top: 5px;
-    font-size: 14px;
-    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.file-info small {
+    opacity: 0.8;
+}
+
+/* Стили для статусных сообщений */
+.status.warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
 }
 
 .completion-message-section {
