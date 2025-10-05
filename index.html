@@ -108,136 +108,239 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📝 Форма обратной связи</h1>
-        
-        <div class="user-info">
-            <strong>Ваш ID:</strong> <span id="user-id">загрузка...</span><br>
-            <strong>Имя:</strong> <span id="user-name">загрузка...</span>
-        </div>
+<div class="container">
+    <h1>📝 Форма обратной связи</h1>
 
-        <form id="feedback-form">
-            <div class="form-group">
-                <label for="message">Ваше сообщение:</label>
-                <textarea id="message" placeholder="Напишите ваш отзыв, предложение или вопрос..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Тип обращения:</label>
-                <div class="buttons-group">
-                    <button type="button" class="btn btn-secondary" data-type="question">❓ Вопрос</button>
-                    <button type="button" class="btn btn-secondary" data-type="suggestion">💡 Предложение</button>
-                    <button type="button" class="btn btn-secondary" data-type="problem">⚠️ Проблема</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Приоритет:</label>
-                <div class="buttons-group">
-                    <button type="button" class="btn btn-secondary" data-priority="low">🟢 Низкий</button>
-                    <button type="button" class="btn btn-secondary" data-priority="medium">🟡 Средний</button>
-                    <button type="button" class="btn btn-primary" data-priority="high">🔴 Высокий</button>
-                </div>
-            </div>
-
-            <div class="buttons-group">
-                <button type="submit" class="btn btn-success">📤 Отправить</button>
-                <button type="button" class="btn btn-secondary" id="close-btn">❌ Закрыть</button>
-            </div>
-        </form>
-
-        <div id="status" class="status"></div>
+    <div class="user-info">
+        <strong>Ваш ID:</strong> <span id="user-id">загрузка...</span><br>
+        <strong>Имя:</strong> <span id="user-name">загрузка...</span>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        
-        // Инициализация
-        tg.expand();
-        tg.enableClosingConfirmation();
-        
-        // Получаем данные пользователя
-        const user = tg.initDataUnsafe?.user;
-        document.getElementById('user-id').textContent = user?.id || 'Не доступно';
-        document.getElementById('user-name').textContent = 
-            user?.first_name + (user?.last_name ? ' ' + user?.last_name : '') || 'Аноним';
-        
-        // Переменные для хранения выбранных значений
-        let selectedType = 'question';
-        let selectedPriority = 'high';
-        
-        // Обработчики для кнопок типа
-        document.querySelectorAll('[data-type]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedType = btn.dataset.type;
-                updateActiveButtons('[data-type]', btn);
-            });
+    <form id="feedback-form">
+        <div class="form-group">
+            <label for="message">Ваше сообщение:</label>
+            <textarea id="message" placeholder="Напишите ваш отзыв, предложение или вопрос..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Тип обращения:</label>
+            <div class="buttons-group">
+                <button type="button" class="btn btn-secondary" data-type="question">❓ Вопрос</button>
+                <button type="button" class="btn btn-secondary" data-type="suggestion">💡 Предложение</button>
+                <button type="button" class="btn btn-secondary" data-type="problem">⚠️ Проблема</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Приоритет:</label>
+            <div class="buttons-group">
+                <button type="button" class="btn btn-secondary" data-priority="low">🟢 Низкий</button>
+                <button type="button" class="btn btn-secondary" data-priority="medium">🟡 Средний</button>
+                <button type="button" class="btn btn-primary" data-priority="high">🔴 Высокий</button>
+            </div>
+        </div>
+
+        <div class="buttons-group">
+            <button type="submit" class="btn btn-success">📤 Отправить</button>
+            <button type="button" class="btn btn-secondary" id="close-btn">❌ Закрыть</button>
+        </div>
+    </form>
+
+    <div id="status" class="status"></div>
+</div>
+<script>
+    const tg = window.Telegram.WebApp;
+
+    // Инициализация
+    tg.expand();
+    tg.enableClosingConfirmation();
+
+    // Получаем данные пользователя
+    const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+    document.getElementById('user-id').textContent = user ? user.id : 'Не доступно';
+    document.getElementById('user-name').textContent = user ? `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}` : 'Аноним';
+
+    if (user) {
+        document.querySelector('h1').textContent = `📝 Форма обратной связи для ${user.first_name}`;
+    }
+
+    let selectedType = 'question';
+    let selectedPriority = 'high';
+
+    document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedType = btn.dataset.type;
+            updateActiveButtons('[data-type]', btn);
         });
-        
-        // Обработчики для кнопок приоритета
-        document.querySelectorAll('[data-priority]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedPriority = btn.dataset.priority;
-                updateActiveButtons('[data-priority]', btn);
-            });
+    });
+
+    document.querySelectorAll('[data-priority]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedPriority = btn.dataset.priority;
+            updateActiveButtons('[data-priority]', btn);
         });
-        
-        // Функция обновления активных кнопок
-        function updateActiveButtons(selector, activeBtn) {
-            document.querySelectorAll(selector).forEach(btn => {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-secondary');
-            });
-            activeBtn.classList.remove('btn-secondary');
-            activeBtn.classList.add('btn-primary');
+    });
+
+    function updateActiveButtons(selector, activeBtn) {
+        document.querySelectorAll(selector).forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        });
+        activeBtn.classList.remove('btn-secondary');
+        activeBtn.classList.add('btn-primary');
+    }
+
+    // 🔹 Отправка формы на свой бекенд
+    document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const message = document.getElementById('message').value.trim();
+        if (!message) {
+            showStatus('Пожалуйста, введите сообщение', 'error');
+            return;
         }
-        
-        // Обработка отправки формы
-        document.getElementById('feedback-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const message = document.getElementById('message').value.trim();
-            
-            if (!message) {
-                showStatus('Пожалуйста, введите сообщение', 'error');
-                return;
+
+        const formData = {
+            user_id: user?.id,
+            user_name: user?.first_name + (user?.last_name ? ' ' + user?.last_name : ''),
+            message: message,
+            type: selectedType,
+            priority: selectedPriority,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            const resp = await fetch("https://your-backend.com/api/feedback", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                // Отправляем formData + initData для верификации
+                body: JSON.stringify({
+                    form: formData,
+                    initData: tg.initData
+                })
+            });
+
+            if (resp.ok) {
+                showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');
+                setTimeout(() => tg.close(), 2000);
+            } else {
+                showStatus('Ошибка при отправке', 'error');
             }
-            
-            // Собираем данные для отправки
-            const formData = {
-                user_id: user?.id,
-                user_name: user?.first_name + (user?.last_name ? ' ' + user?.last_name : ''),
-                message: message,
-                type: selectedType,
-                priority: selectedPriority,
-                timestamp: new Date().toISOString()
-            };
-            
-            // Отправляем данные в бот
-            tg.sendData(JSON.stringify(formData));
-            showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');
-            
-            // Закрываем через 2 секунды
-            setTimeout(() => {
-                tg.close();
-            }, 2000);
-        });
-        
-        // Кнопка закрытия
-        document.getElementById('close-btn').addEventListener('click', () => {
-            tg.close();
-        });
-        
-        // Показать статус
-        function showStatus(text, type) {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = text;
-            statusEl.className = `status ${type}`;
+        } catch (err) {
+            console.error(err);
+            showStatus('Ошибка соединения', 'error');
         }
-        
-        // Изначально активируем кнопки по умолчанию
-        updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));
-        updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));
-    </script>
+    });
+
+    document.getElementById('close-btn').addEventListener('click', () => {
+        tg.close();
+    });
+
+    function showStatus(text, type) {
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = text;
+        statusEl.className = `status ${type}`;
+    }
+
+    updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));
+    updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));
+</script>
+
+<!--<script>-->
+<!--    const tg = window.Telegram.WebApp;-->
+
+<!--    // Инициализация-->
+<!--    tg.expand();-->
+<!--    tg.enableClosingConfirmation();-->
+
+<!--    // Получаем данные пользователя-->
+<!--    const user = tg.initDataUnsafe && tg.initDataUnsafe.user;-->
+<!--    document.getElementById('user-id').textContent = user ? user.id : 'Не доступно';-->
+<!--    document.getElementById('user-name').textContent = user ? `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}` : 'Аноним';-->
+
+<!--    // Дополнительно — вставь имя в заголовок-->
+<!--    if (user) {-->
+<!--        document.querySelector('h1').textContent = `📝 Форма обратной связи для ${user.first_name}`;-->
+<!--    }-->
+
+<!--    // Переменные для хранения выбранных значений-->
+<!--    let selectedType = 'question';-->
+<!--    let selectedPriority = 'high';-->
+
+<!--    // Обработчики для кнопок типа-->
+<!--    document.querySelectorAll('[data-type]').forEach(btn => {-->
+<!--        btn.addEventListener('click', () => {-->
+<!--            selectedType = btn.dataset.type;-->
+<!--            updateActiveButtons('[data-type]', btn);-->
+<!--        });-->
+<!--    });-->
+
+<!--    // Обработчики для кнопок приоритета-->
+<!--    document.querySelectorAll('[data-priority]').forEach(btn => {-->
+<!--        btn.addEventListener('click', () => {-->
+<!--            selectedPriority = btn.dataset.priority;-->
+<!--            updateActiveButtons('[data-priority]', btn);-->
+<!--        });-->
+<!--    });-->
+
+<!--    // Функция обновления активных кнопок-->
+<!--    function updateActiveButtons(selector, activeBtn) {-->
+<!--        document.querySelectorAll(selector).forEach(btn => {-->
+<!--            btn.classList.remove('btn-primary');-->
+<!--            btn.classList.add('btn-secondary');-->
+<!--        });-->
+<!--        activeBtn.classList.remove('btn-secondary');-->
+<!--        activeBtn.classList.add('btn-primary');-->
+<!--    }-->
+
+<!--    // Обработка отправки формы-->
+<!--    document.getElementById('feedback-form').addEventListener('submit', (e) => {-->
+<!--        e.preventDefault();-->
+
+<!--        const message = document.getElementById('message').value.trim();-->
+
+<!--        if (!message) {-->
+<!--            showStatus('Пожалуйста, введите сообщение', 'error');-->
+<!--            return;-->
+<!--        }-->
+
+<!--        // Собираем данные для отправки-->
+<!--        const formData = {-->
+<!--            user_id: user?.id,-->
+<!--            user_name: user?.first_name + (user?.last_name ? ' ' + user?.last_name : ''),-->
+<!--            message: message,-->
+<!--            type: selectedType,-->
+<!--            priority: selectedPriority,-->
+<!--            timestamp: new Date().toISOString()-->
+<!--        };-->
+
+<!--        // Отправляем данные в бот-->
+<!--        tg.sendData(JSON.stringify(formData));-->
+<!--        showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');-->
+
+<!--        // Закрываем через 2 секунды-->
+<!--        setTimeout(() => {-->
+<!--            tg.close();-->
+<!--        }, 2000);-->
+<!--    });-->
+
+<!--    // Кнопка закрытия-->
+<!--    document.getElementById('close-btn').addEventListener('click', () => {-->
+<!--        tg.close();-->
+<!--    });-->
+
+<!--    // Показать статус-->
+<!--    function showStatus(text, type) {-->
+<!--        const statusEl = document.getElementById('status');-->
+<!--        statusEl.textContent = text;-->
+<!--        statusEl.className = `status ${type}`;-->
+<!--    }-->
+
+<!--    // Изначально активируем кнопки по умолчанию-->
+<!--    updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));-->
+<!--    updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));-->
+<!--</script>-->
 </body>
 </html>
