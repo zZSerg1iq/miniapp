@@ -7,218 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
-            color: #000000;
-            line-height: 1.5;
-            padding: 20px;
-            min-height: 100vh;
-            overflow-y: auto;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .warning-banner {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .user-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .buttons-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .stage-content {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-
-        textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        textarea:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-
-        .answer-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .answer-option input[type="text"] {
-            flex: 1;
-            margin-right: 10px;
-            margin-bottom: 0;
-        }
-
-        .map-container {
-            height: 300px;
-            background: #e9ecef;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        #map {
-            height: 100%;
-            width: 100%;
-            border-radius: 8px;
-        }
-
-        .map-instructions {
-            text-align: center;
-            color: #6c757d;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .coordinates-display {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-family: monospace;
-            font-size: 14px;
-        }
-
-        .status {
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            text-align: center;
-            display: none;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loading {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-            
-            .btn {
-                font-size: 14px;
-                padding: 10px 15px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -240,7 +29,7 @@
                 <button type="button" class="btn btn-secondary" data-type="message">📨 Сообщение</button>
                 <button type="button" class="btn btn-secondary" data-type="quiz">❓ Викторина</button>
                 <button type="button" class="btn btn-secondary" data-type="geo">📍 Гео точка</button>
-                <button type="button" class="btn btn-secondary" data-type="riddle">🔍 Загадка</button>
+                <button type="button" class="btn btn-secondary" data-type="riddle">💬 Ответить на вопрос</button>
             </div>
         </div>
 
@@ -254,6 +43,24 @@
                     rows="5"
                 ></textarea>
             </div>
+            
+            <div class="form-group">
+                <label for="message-file">Прикрепить файл (до 10 МБ):</label>
+                <input type="file" id="message-file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                <div class="file-info" id="message-file-info"></div>
+            </div>
+            
+            <div class="completion-message-section">
+                <button type="button" class="btn btn-secondary" id="toggle-message-completion">+ Сообщение при завершении</button>
+                <div class="completion-message-content" id="message-completion-content" style="display: none;">
+                    <textarea 
+                        id="message-completion-text" 
+                        placeholder="Сообщение, которое увидит пользователь после выполнения..."
+                        rows="3"
+                    ></textarea>
+                </div>
+            </div>
+            
             <button type="button" class="btn btn-success" id="send-message-btn" disabled>📤 Отправить</button>
         </div>
 
@@ -267,18 +74,20 @@
             <div class="form-group">
                 <label>Варианты ответов:</label>
                 <div id="answer-options">
-                    <div class="answer-option">
-                        <input type="text" placeholder="Вариант ответа 1" class="quiz-answer">
-                        <input type="checkbox" class="correct-answer">
-                        <label>Верный</label>
-                    </div>
-                    <div class="answer-option">
-                        <input type="text" placeholder="Вариант ответа 2" class="quiz-answer">
-                        <input type="checkbox" class="correct-answer">
-                        <label>Верный</label>
-                    </div>
+                    <!-- Options will be added dynamically -->
                 </div>
                 <button type="button" class="btn btn-secondary" id="add-option-btn">+ Добавить вариант</button>
+            </div>
+            
+            <div class="completion-message-section">
+                <button type="button" class="btn btn-secondary" id="toggle-quiz-completion">+ Сообщение при завершении</button>
+                <div class="completion-message-content" id="quiz-completion-content" style="display: none;">
+                    <textarea 
+                        id="quiz-completion-text" 
+                        placeholder="Сообщение, которое увидит пользователь после выполнения..."
+                        rows="3"
+                    ></textarea>
+                </div>
             </div>
             
             <button type="button" class="btn btn-success" id="send-quiz-btn" disabled>📤 Отправить</button>
@@ -295,312 +104,69 @@
             <div class="coordinates-display" id="coordinates">
                 Координаты: не выбраны
             </div>
+            
+            <div class="completion-message-section">
+                <button type="button" class="btn btn-secondary" id="toggle-geo-completion">+ Сообщение при завершении</button>
+                <div class="completion-message-content" id="geo-completion-content" style="display: none;">
+                    <textarea 
+                        id="geo-completion-text" 
+                        placeholder="Сообщение, которое увидит пользователь после выполнения..."
+                        rows="3"
+                    ></textarea>
+                </div>
+            </div>
+            
             <button type="button" class="btn btn-success" id="send-geo-btn" disabled>📤 Отправить</button>
         </div>
 
-        <!-- Контент для типа "Загадка" -->
+        <!-- Контент для типа "Ответить на вопрос" -->
         <div id="riddle-content" class="stage-content">
             <div class="form-group">
-                <label for="riddle-text">Текст загадки:</label>
+                <label for="riddle-text">Вопрос:</label>
                 <textarea 
                     id="riddle-text" 
-                    placeholder="Введите текст загадки..." 
+                    placeholder="Введите вопрос..." 
                     rows="5"
                 ></textarea>
             </div>
+            
             <div class="form-group">
-                <label for="riddle-answer">Ответ на загадку:</label>
-                <input type="text" id="riddle-answer" placeholder="Введите правильный ответ...">
+                <label>Правильные ответы (можно добавить несколько):</label>
+                <div id="correct-answers">
+                    <div class="answer-option">
+                        <input type="text" placeholder="Правильный ответ 1" class="correct-answer-input">
+                        <button type="button" class="btn-remove-answer">🗑️</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="add-correct-answer-btn">+ Добавить правильный ответ</button>
             </div>
+            
+            <div class="form-group">
+                <label for="min-answers">Минимальное количество верных ответов:</label>
+                <input type="number" id="min-answers" min="1" value="1" class="number-input">
+            </div>
+            
+            <div class="completion-message-section">
+                <button type="button" class="btn btn-secondary" id="toggle-riddle-completion">+ Сообщение при завершении</button>
+                <div class="completion-message-content" id="riddle-completion-content" style="display: none;">
+                    <textarea 
+                        id="riddle-completion-text" 
+                        placeholder="Сообщение, которое увидит пользователь после выполнения..."
+                        rows="3"
+                    ></textarea>
+                </div>
+            </div>
+            
             <button type="button" class="btn btn-success" id="send-riddle-btn" disabled>📤 Отправить</button>
         </div>
 
         <div id="status" class="status"></div>
     </div>
 
-    <script>
-        // 🚀 Основная инициализация
-        function initializeApp() {
-            const tg = window.Telegram?.WebApp;
-            
-            if (tg) {
-                try {
-                    tg.expand();
-                    tg.enableClosingConfirmation();
-                    
-                    // Получаем данные пользователя
-                    const user = tg.initDataUnsafe?.user;
-                    const userId = user?.id || 'Не доступно';
-                    const userName = user ? 
-                        `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 
-                        'Аноним';
-                    
-                    // Обновляем интерфейс
-                    document.getElementById('user-id').textContent = userId;
-                    document.getElementById('user-name').textContent = userName;
-                    document.getElementById('platform-info').textContent = 
-                        `${tg.platform} • ${tg.colorScheme} тема`;
-                    
-                    console.log('Telegram WebApp инициализирован');
-                    return tg;
-                    
-                } catch (error) {
-                    console.error('Ошибка инициализации Telegram WebApp:', error);
-                    return null;
-                }
-            } else {
-                document.getElementById('platform-info').textContent = 'Браузер (вне Telegram)';
-                return null;
-            }
-        }
-
-        // 📝 Логика формы
-        let selectedType = null;
-        let markerCoordinates = null;
-        let map = null;
-        let marker = null;
-        let answerOptionsCount = 2;
-
-        function showStatus(text, type) {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = text;
-            statusEl.className = `status ${type}`;
-            statusEl.style.display = 'block';
-        }
-
-        function hideAllStageContent() {
-            document.querySelectorAll('.stage-content').forEach(el => {
-                el.style.display = 'none';
-            });
-        }
-
-        function updateActiveButtons() {
-            document.querySelectorAll('[data-type]').forEach(btn => {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-secondary');
-            });
-            
-            if (selectedType) {
-                const activeBtn = document.querySelector(`[data-type="${selectedType}"]`);
-                if (activeBtn) {
-                    activeBtn.classList.remove('btn-secondary');
-                    activeBtn.classList.add('btn-primary');
-                }
-            }
-        }
-
-        function showStageContent(type) {
-            hideAllStageContent();
-            const contentEl = document.getElementById(`${type}-content`);
-            if (contentEl) {
-                contentEl.style.display = 'block';
-                
-                // Инициализируем карту, если выбран тип "geo"
-                if (type === 'geo' && !map) {
-                    initMap();
-                }
-            }
-        }
-
-        function validateMessageForm() {
-            const messageText = document.getElementById('message-text').value.trim();
-            const sendBtn = document.getElementById('send-message-btn');
-            sendBtn.disabled = !messageText;
-        }
-
-        function validateQuizForm() {
-            const question = document.getElementById('quiz-question').value.trim();
-            const answers = document.querySelectorAll('.quiz-answer');
-            let hasAnswers = false;
-            let hasCorrect = false;
-            
-            answers.forEach(answer => {
-                if (answer.value.trim()) {
-                    hasAnswers = true;
-                    const checkbox = answer.parentElement.querySelector('.correct-answer');
-                    if (checkbox.checked) {
-                        hasCorrect = true;
-                    }
-                }
-            });
-            
-            const sendBtn = document.getElementById('send-quiz-btn');
-            sendBtn.disabled = !(question && hasAnswers && hasCorrect);
-        }
-
-        function addAnswerOption() {
-            if (answerOptionsCount >= 10) return;
-            
-            answerOptionsCount++;
-            const optionsContainer = document.getElementById('answer-options');
-            const newOption = document.createElement('div');
-            newOption.className = 'answer-option';
-            newOption.innerHTML = `
-                <input type="text" placeholder="Вариант ответа ${answerOptionsCount}" class="quiz-answer">
-                <input type="checkbox" class="correct-answer">
-                <label>Верный</label>
-            `;
-            optionsContainer.appendChild(newOption);
-            
-            // Добавляем обработчики событий для новых полей
-            newOption.querySelector('.quiz-answer').addEventListener('input', validateQuizForm);
-            newOption.querySelector('.correct-answer').addEventListener('change', validateQuizForm);
-            
-            // Обновляем кнопку добавления, если достигнут максимум
-            if (answerOptionsCount >= 10) {
-                document.getElementById('add-option-btn').disabled = true;
-            }
-        }
-
-        function initMap() {
-            // Инициализация карты с центром на Москве
-            map = L.map('map').setView([55.7558, 37.6173], 13);
-            
-            // Добавление слоя карты OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Обработчик клика по карте
-            map.on('click', function(e) {
-                const { lat, lng } = e.latlng;
-                
-                // Удаляем существующую метку, если есть
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                
-                // Создаем новую метку с возможностью перетаскивания
-                marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-                
-                // Обновляем координаты при перемещении метки
-                marker.on('dragend', function() {
-                    const position = marker.getLatLng();
-                    updateCoordinatesDisplay(position.lat, position.lng);
-                });
-                
-                // Обновляем отображение координат
-                updateCoordinatesDisplay(lat, lng);
-                
-                // Сохраняем координаты
-                markerCoordinates = { lat, lng };
-                
-                // Активируем кнопку отправки
-                document.getElementById('send-geo-btn').disabled = false;
-            });
-        }
-
-        function updateCoordinatesDisplay(lat, lng) {
-            const coordinatesElement = document.getElementById('coordinates');
-            coordinatesElement.textContent = `Координаты: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        }
-
-        function validateRiddleForm() {
-            const riddleText = document.getElementById('riddle-text').value.trim();
-            const riddleAnswer = document.getElementById('riddle-answer').value.trim();
-            const sendBtn = document.getElementById('send-riddle-btn');
-            sendBtn.disabled = !(riddleText && riddleAnswer);
-        }
-
-        function sendData(data) {
-            const tg = window.Telegram?.WebApp;
-            
-            if (tg) {
-                try {
-                    showStatus('Отправка...', 'loading');
-                    tg.sendData(JSON.stringify(data));
-                    showStatus('✅ Данные отправлены!', 'success');
-                } catch (error) {
-                    console.error('Ошибка отправки:', error);
-                    showStatus('❌ Ошибка при отправке', 'error');
-                }
-            } else {
-                showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
-                console.log('Данные для отправки:', data);
-            }
-        }
-
-        // 🎯 Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            const tg = initializeApp();
-            
-            // Обработчики кнопок выбора типа этапа
-            document.querySelectorAll('[data-type]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    selectedType = btn.dataset.type;
-                    updateActiveButtons();
-                    showStageContent(selectedType);
-                });
-            });
-
-            // Обработчики для формы "Сообщение"
-            document.getElementById('message-text').addEventListener('input', validateMessageForm);
-            document.getElementById('send-message-btn').addEventListener('click', () => {
-                const data = {
-                    type: 'message',
-                    text: document.getElementById('message-text').value.trim(),
-                    timestamp: new Date().toISOString()
-                };
-                sendData(data);
-            });
-
-            // Обработчики для формы "Викторина"
-            document.getElementById('quiz-question').addEventListener('input', validateQuizForm);
-            document.querySelectorAll('.quiz-answer').forEach(input => {
-                input.addEventListener('input', validateQuizForm);
-            });
-            document.querySelectorAll('.correct-answer').forEach(checkbox => {
-                checkbox.addEventListener('change', validateQuizForm);
-            });
-            document.getElementById('add-option-btn').addEventListener('click', addAnswerOption);
-            document.getElementById('send-quiz-btn').addEventListener('click', () => {
-                const question = document.getElementById('quiz-question').value.trim();
-                const answers = [];
-                
-                document.querySelectorAll('.answer-option').forEach(option => {
-                    const answerText = option.querySelector('.quiz-answer').value.trim();
-                    const isCorrect = option.querySelector('.correct-answer').checked;
-                    
-                    if (answerText) {
-                        answers.push({
-                            text: answerText,
-                            correct: isCorrect
-                        });
-                    }
-                });
-                
-                const data = {
-                    type: 'quiz',
-                    question: question,
-                    answers: answers,
-                    timestamp: new Date().toISOString()
-                };
-                sendData(data);
-            });
-
-            // Обработчики для формы "Гео точка"
-            document.getElementById('send-geo-btn').addEventListener('click', () => {
-                const data = {
-                    type: 'geo',
-                    coordinates: markerCoordinates,
-                    timestamp: new Date().toISOString()
-                };
-                sendData(data);
-            });
-
-            // Обработчики для формы "Загадка"
-            document.getElementById('riddle-text').addEventListener('input', validateRiddleForm);
-            document.getElementById('riddle-answer').addEventListener('input', validateRiddleForm);
-            document.getElementById('send-riddle-btn').addEventListener('click', () => {
-                const data = {
-                    type: 'riddle',
-                    text: document.getElementById('riddle-text').value.trim(),
-                    answer: document.getElementById('riddle-answer').value.trim(),
-                    timestamp: new Date().toISOString()
-                };
-                sendData(data);
-            });
-        });
-    </script>
+    <script src="app.js"></script>
+    <script src="message.js"></script>
+    <script src="quiz.js"></script>
+    <script src="map.js"></script>
+    <script src="riddle.js"></script>
 </body>
 </html>
