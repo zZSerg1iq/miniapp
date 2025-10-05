@@ -1,10 +1,17 @@
-javascript
-
 // Логика для типа "Ответить на вопрос"
 let correctAnswersCount = 1;
 
 function initRiddle() {
+    createInitialAnswers();
     validateRiddleForm();
+}
+
+function createInitialAnswers() {
+    const answersContainer = document.getElementById('correct-answers');
+    answersContainer.innerHTML = ''; // Очищаем контейнер
+    
+    // Создаем первый вариант ответа
+    addCorrectAnswer(true);
 }
 
 function validateRiddleForm() {
@@ -19,10 +26,11 @@ function validateRiddleForm() {
     });
     
     const sendBtn = document.getElementById('send-riddle-btn');
+    // Кнопка активна если есть вопрос и хотя бы один ответ
     sendBtn.disabled = !(riddleText && hasAnswers);
 }
 
-function addCorrectAnswer() {
+function addCorrectAnswer(isInitial = false) {
     correctAnswersCount++;
     const answersContainer = document.getElementById('correct-answers');
     const newAnswer = document.createElement('div');
@@ -35,13 +43,21 @@ function addCorrectAnswer() {
     
     // Добавляем обработчики событий для нового поля
     newAnswer.querySelector('.correct-answer-input').addEventListener('input', validateRiddleForm);
-    newAnswer.querySelector('.btn-remove-answer').addEventListener('click', function() {
-        if (correctAnswersCount > 1) {
-            newAnswer.remove();
-            correctAnswersCount--;
-            validateRiddleForm();
-        }
-    });
+    
+    // Для начального варианта скрываем кнопку удаления
+    if (!isInitial) {
+        newAnswer.querySelector('.btn-remove-answer').addEventListener('click', function() {
+            if (correctAnswersCount > 2) {
+                newAnswer.remove();
+                correctAnswersCount--;
+                validateRiddleForm();
+            }
+        });
+    } else {
+        newAnswer.querySelector('.btn-remove-answer').style.display = 'none';
+    }
+    
+    validateRiddleForm();
 }
 
 function getRiddleData() {
@@ -105,20 +121,10 @@ function initCompletionMessages() {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('riddle-text').addEventListener('input', validateRiddleForm);
     document.getElementById('min-answers').addEventListener('input', validateRiddleForm);
-    document.getElementById('add-correct-answer-btn').addEventListener('click', addCorrectAnswer);
+    document.getElementById('add-correct-answer-btn').addEventListener('click', () => addCorrectAnswer(false));
     
     document.getElementById('send-riddle-btn').addEventListener('click', () => {
         const data = getRiddleData();
         sendData(data);
-    });
-    
-    // Инициализация первого правильного ответа
-    document.querySelector('.correct-answer-input').addEventListener('input', validateRiddleForm);
-    document.querySelector('.btn-remove-answer').addEventListener('click', function() {
-        if (correctAnswersCount > 1) {
-            this.parentElement.remove();
-            correctAnswersCount--;
-            validateRiddleForm();
-        }
     });
 });
