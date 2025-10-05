@@ -9,27 +9,51 @@ function validateMessageForm() {
     const hasFile = fileInput.files.length > 0;
     
     const sendBtn = document.getElementById('send-message-btn');
-    // Кнопка активна если есть текст ИЛИ файл
     sendBtn.disabled = !(messageText || hasFile);
 }
 
-function getMessageData() {
+// Функция для загрузки файла
+async function uploadFile(file) {
+    // Здесь должен быть ваш сервер для загрузки файлов
+    // Для демонстрации создаем временную ссылку
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // В реальном приложении здесь должен быть fetch на ваш сервер
+            const fileData = {
+                url: URL.createObjectURL(file), // временная ссылка
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                base64: e.target.result // для небольших файлов можно использовать base64
+            };
+            resolve(fileData);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function getMessageData() {
     const fileInput = document.getElementById('message-file');
     const file = fileInput.files[0];
     let fileData = null;
     
     if (file) {
-        fileData = {
-            name: file.name,
-            type: file.type,
-            size: file.size
-        };
+        try {
+            showStatus('📤 Загрузка файла...', 'loading');
+            fileData = await uploadFile(file);
+            showStatus('✅ Файл загружен', 'success');
+        } catch (error) {
+            console.error('Ошибка загрузки файла:', error);
+            showStatus('❌ Ошибка загрузки файла', 'error');
+            return null;
+        }
     }
     
     return {
         type: 'message',
         text: document.getElementById('message-text').value.trim(),
-        file: fileData,
+        file: fileData, // теперь здесь полные данные файла
         completionMessage: document.getElementById('message-completion-text').value.trim() || null,
         timestamp: new Date().toISOString()
     };
@@ -57,8 +81,17 @@ document.addEventListener('DOMContentLoaded', function() {
         validateMessageForm();
     });
     
-    document.getElementById('send-message-btn').addEventListener('click', () => {
-        const data = getMessageData();
-        sendData(data);
+    document.getElementById('send-message-btn').addEventListener('click', async () => {
+        const sendBtn = document.getElementById('send-message-btn');
+        sendBtn.disabled = true;
+        sendBtn.textContent = '📤 Отправка...';
+        
+        const data = await getMessageData();
+        if (data) {
+            sendData(data);
+        }
+        
+        sendBtn.disabled = false;
+        sendBtn.textContent = '📤 Отправить';
     });
 });
