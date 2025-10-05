@@ -1,4 +1,3 @@
-// 🚀 Основная инициализация
 let tg = null;
 let selectedType = null;
 
@@ -69,6 +68,17 @@ function showStageContent(type) {
     const contentEl = document.getElementById(`${type}-content`);
     if (contentEl) {
         contentEl.style.display = 'block';
+        
+        // Инициализируем специфичные для типа функции
+        if (type === 'geo') {
+            setTimeout(() => initMap(), 100); // Небольшая задержка для инициализации карты
+        } else if (type === 'quiz') {
+            initQuiz();
+        } else if (type === 'message') {
+            initMessage();
+        } else if (type === 'riddle') {
+            initRiddle();
+        }
     }
 }
 
@@ -98,17 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedType = btn.dataset.type;
             updateActiveButtons();
             showStageContent(selectedType);
-            
-            // Инициализируем специфичные для типа функции
-            if (selectedType === 'geo') {
-                initMap();
-            } else if (selectedType === 'quiz') {
-                initQuiz();
-            } else if (selectedType === 'message') {
-                initMessage();
-            } else if (selectedType === 'riddle') {
-                initRiddle();
-            }
         });
     });
     
