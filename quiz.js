@@ -50,7 +50,10 @@ function addAnswerOption(isInitial = false) {
     newOption.className = 'answer-option';
     newOption.innerHTML = `
         <input type="text" placeholder="Вариант ответа ${answerOptionsCount}" class="quiz-answer">
-        <input type="checkbox" class="correct-checkbox" title="Верный ответ">
+        <div class="correct-answer-container">
+            <input type="checkbox" class="correct-checkbox" title="Верный ответ">
+            <span class="correct-label">Верный ответ</span>
+        </div>
         <button type="button" class="btn-remove-answer">🗑️</button>
     `;
     optionsContainer.appendChild(newOption);
@@ -111,13 +114,16 @@ function getQuizData() {
     };
 }
 
+function sendQuizData() {
+    const data = getQuizData();
+    console.log('Отправка данных викторины:', data);
+    sendData(data);
+}
+
 // Обработчики для формы "Викторина"
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quiz-question').addEventListener('input', validateQuizForm);
     document.getElementById('add-option-btn').addEventListener('click', () => addAnswerOption(false));
     
-    document.getElementById('send-quiz-btn').addEventListener('click', () => {
-        const data = getQuizData();
-        sendData(data);
-    });
+    document.getElementById('send-quiz-btn').addEventListener('click', sendQuizData);
 });
