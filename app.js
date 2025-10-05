@@ -1,3 +1,10 @@
+// Конфигурация
+const CONFIG = {
+    MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+    MAX_BASE64_SIZE: 1 * 1024 * 1024, // 1MB для base64
+    BOT_USERNAME: '@BrainBuster_bot' // Замените на username вашего бота
+};
+
 // 🚀 Основная инициализация
 let tg = null;
 let selectedType = null;
