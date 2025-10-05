@@ -65,33 +65,33 @@
         </div>
 
         <!-- Контент для типа "Викторина" -->
-        <div id="quiz-content" class="stage-content">
-            <div class="form-group">
-                <label for="quiz-question">Вопрос:</label>
-                <input type="text" id="quiz-question" placeholder="Введите вопрос викторины...">
-            </div>
-            
-            <div class="form-group">
-                <label>Варианты ответов:</label>
-                <div id="answer-options">
-                    <!-- Options will be added dynamically -->
-                </div>
-                <button type="button" class="btn btn-secondary" id="add-option-btn">+ Добавить вариант</button>
-            </div>
-            
-            <div class="completion-message-section">
-                <button type="button" class="btn btn-secondary" id="toggle-quiz-completion">+ Сообщение при завершении</button>
-                <div class="completion-message-content" id="quiz-completion-content" style="display: none;">
-                    <textarea 
-                        id="quiz-completion-text" 
-                        placeholder="Сообщение, которое увидит пользователь после выполнения..."
-                        rows="3"
-                    ></textarea>
-                </div>
-            </div>
-            
-            <button type="button" class="btn btn-success" id="send-quiz-btn" disabled>📤 Отправить</button>
+<div id="quiz-content" class="stage-content">
+    <div class="form-group">
+        <label for="quiz-question">Вопрос:</label>
+        <input type="text" id="quiz-question" placeholder="Введите вопрос викторины...">
+    </div>
+    
+    <div class="form-group">
+        <label>Варианты ответов:</label>
+        <div id="answer-options">
+            <!-- Options will be added dynamically -->
         </div>
+        <button type="button" class="btn btn-secondary" id="add-option-btn">+ Добавить вариант</button>
+    </div>
+    
+    <div class="completion-message-section">
+        <button type="button" class="btn btn-secondary" id="toggle-quiz-completion">+ Сообщение при завершении</button>
+        <div class="completion-message-content" id="quiz-completion-content" style="display: none;">
+            <textarea 
+                id="quiz-completion-text" 
+                placeholder="Сообщение, которое увидит пользователь после выполнения..."
+                rows="3"
+            ></textarea>
+        </div>
+    </div>
+    
+    <button type="button" class="btn btn-success" id="send-quiz-btn" disabled>📤 Отправить</button>
+</div>
 
         <!-- Контент для типа "Гео точка" -->
         <div id="geo-content" class="stage-content">
