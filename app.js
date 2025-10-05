@@ -1,37 +1,55 @@
+// 🚀 Основная инициализация
 let tg = null;
 let selectedType = null;
 
 function initializeApp() {
     tg = window.Telegram?.WebApp;
     
-    if (tg) {
+    if (tg && tg.initDataUnsafe) {
         try {
             tg.expand();
             tg.enableClosingConfirmation();
             
+            console.log('Telegram WebApp данные:', tg.initDataUnsafe);
+            
             // Получаем данные пользователя
-            const user = tg.initDataUnsafe?.user;
-            const userId = user?.id || 'Не доступно';
+            const user = tg.initDataUnsafe.user;
+            const userId = user?.id ? user.id.toString() : 'Не доступно';
             const userName = user ? 
                 `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 
                 'Аноним';
             
             // Обновляем интерфейс
             document.getElementById('user-id').textContent = userId;
-            document.getElementById('user-name').textContent = userName;
+            document.getElementById('user-name').textContent = userName || 'Аноним';
             document.getElementById('platform-info').textContent = 
                 `${tg.platform} • ${tg.colorScheme} тема`;
             
-            console.log('Telegram WebApp инициализирован');
+            console.log('Telegram WebApp инициализирован:', { userId, userName });
             return tg;
             
         } catch (error) {
             console.error('Ошибка инициализации Telegram WebApp:', error);
+            showFallbackInfo();
             return null;
         }
     } else {
-        document.getElementById('platform-info').textContent = 'Браузер (вне Telegram)';
+        console.warn('Telegram WebApp не обнаружен или данные не переданы');
+        showFallbackInfo();
         return null;
+    }
+}
+
+function showFallbackInfo() {
+    document.getElementById('user-id').textContent = 'Не доступно';
+    document.getElementById('user-name').textContent = 'Аноним';
+    document.getElementById('platform-info').textContent = 'Браузер (вне Telegram)';
+    
+    // Показываем предупреждение
+    const warningBanner = document.querySelector('.warning-banner');
+    if (warningBanner) {
+        warningBanner.style.display = 'block';
+        warningBanner.innerHTML = '⚠️ Для полной функциональности откройте приложение через Telegram бота.';
     }
 }
 
@@ -71,7 +89,7 @@ function showStageContent(type) {
         
         // Инициализируем специфичные для типа функции
         if (type === 'geo') {
-            setTimeout(() => initMap(), 100); // Небольшая задержка для инициализации карты
+            setTimeout(() => initMap(), 100);
         } else if (type === 'quiz') {
             initQuiz();
         } else if (type === 'message') {
@@ -82,12 +100,26 @@ function showStageContent(type) {
     }
 }
 
-function sendData(data) {
+// Глобальная функция для отправки данных
+window.sendData = function(data) {
+    // Добавляем данные пользователя к отправляемым данным
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        data.userId = user.id;
+        data.userName = `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim();
+    }
+    
     if (tg) {
         try {
             showStatus('Отправка...', 'loading');
             tg.sendData(JSON.stringify(data));
-            showStatus('✅ Данные отправлены!', 'success');
+            showStatus('✅ Данные отправлены! Закрываю приложение...', 'success');
+            
+            // Закрываем приложение через 2 секунды
+            setTimeout(() => {
+                tg.close();
+            }, 2000);
+            
             console.log('Данные успешно отправлены:', data);
         } catch (error) {
             console.error('Ошибка отправки:', error);
@@ -101,6 +133,7 @@ function sendData(data) {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Загрузка приложения...');
     initializeApp();
     
     // Обработчики кнопок выбора типа этапа
@@ -113,23 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Инициализация сообщений при завершении
-    initCompletionMessages();
-});
-
-// Глобальная функция для отправки данных (доступна из всех файлов)
-window.sendData = function(data) {
-    if (tg) {
-        try {
-            showStatus('Отправка...', 'loading');
-            tg.sendData(JSON.stringify(data));
-            showStatus('✅ Данные отправлены!', 'success');
-            console.log('Данные успешно отправлены:', data);
-        } catch (error) {
-            console.error('Ошибка отправки:', error);
-            showStatus('❌ Ошибка при отправке', 'error');
-        }
-    } else {
-        showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
-        console.log('Данные для отправки (вне Telegram):', data);
+    if (typeof initCompletionMessages === 'function') {
+        initCompletionMessages();
     }
-}
+});
