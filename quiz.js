@@ -1,25 +1,34 @@
-javascript
-
 // Логика для типа "Викторина"
 let answerOptionsCount = 0;
 
 function initQuiz() {
+    // Создаем начальные 2 варианта ответа
     if (answerOptionsCount === 0) {
-        addAnswerOption();
-        addAnswerOption();
+        createInitialOptions();
     }
     validateQuizForm();
+}
+
+function createInitialOptions() {
+    const optionsContainer = document.getElementById('answer-options');
+    optionsContainer.innerHTML = ''; // Очищаем контейнер
+    
+    // Создаем 2 начальных варианта
+    for (let i = 0; i < 2; i++) {
+        addAnswerOption(true);
+    }
 }
 
 function validateQuizForm() {
     const question = document.getElementById('quiz-question').value.trim();
     const answers = document.querySelectorAll('.quiz-answer');
-    let hasAnswers = false;
+    
+    let filledAnswers = 0;
     let hasCorrect = false;
     
     answers.forEach(answer => {
         if (answer.value.trim()) {
-            hasAnswers = true;
+            filledAnswers++;
             const checkbox = answer.parentElement.querySelector('.correct-checkbox');
             if (checkbox.checked) {
                 hasCorrect = true;
@@ -28,10 +37,11 @@ function validateQuizForm() {
     });
     
     const sendBtn = document.getElementById('send-quiz-btn');
-    sendBtn.disabled = !(question && hasAnswers && hasCorrect);
+    // Кнопка активна если есть вопрос, минимум 2 заполненных ответа и хотя бы один верный
+    sendBtn.disabled = !(question && filledAnswers >= 2 && hasCorrect);
 }
 
-function addAnswerOption() {
+function addAnswerOption(isInitial = false) {
     if (answerOptionsCount >= 10) return;
     
     answerOptionsCount++;
@@ -48,18 +58,32 @@ function addAnswerOption() {
     // Добавляем обработчики событий для новых полей
     newOption.querySelector('.quiz-answer').addEventListener('input', validateQuizForm);
     newOption.querySelector('.correct-checkbox').addEventListener('change', validateQuizForm);
-    newOption.querySelector('.btn-remove-answer').addEventListener('click', function() {
-        if (answerOptionsCount > 2) {
-            newOption.remove();
-            answerOptionsCount--;
-            validateQuizForm();
-        }
-    });
+    
+    // Для начальных вариантов не добавляем кнопку удаления
+    if (!isInitial) {
+        newOption.querySelector('.btn-remove-answer').addEventListener('click', function() {
+            if (answerOptionsCount > 2) {
+                newOption.remove();
+                answerOptionsCount--;
+                validateQuizForm();
+                
+                // Включаем кнопку добавления если было достигнуто максимума
+                if (answerOptionsCount < 10) {
+                    document.getElementById('add-option-btn').disabled = false;
+                }
+            }
+        });
+    } else {
+        // Для начальных вариантов скрываем кнопку удаления
+        newOption.querySelector('.btn-remove-answer').style.display = 'none';
+    }
     
     // Обновляем кнопку добавления, если достигнут максимум
     if (answerOptionsCount >= 10) {
         document.getElementById('add-option-btn').disabled = true;
     }
+    
+    validateQuizForm();
 }
 
 function getQuizData() {
@@ -90,7 +114,7 @@ function getQuizData() {
 // Обработчики для формы "Викторина"
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quiz-question').addEventListener('input', validateQuizForm);
-    document.getElementById('add-option-btn').addEventListener('click', addAnswerOption);
+    document.getElementById('add-option-btn').addEventListener('click', () => addAnswerOption(false));
     
     document.getElementById('send-quiz-btn').addEventListener('click', () => {
         const data = getQuizData();
