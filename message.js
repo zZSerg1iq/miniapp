@@ -12,25 +12,49 @@ function validateMessageForm() {
     sendBtn.disabled = !(messageText || hasFile);
 }
 
-// Функция для загрузки файла
 async function uploadFile(file) {
-    // Здесь должен быть ваш сервер для загрузки файлов
-    // Для демонстрации создаем временную ссылку
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            // В реальном приложении здесь должен быть fetch на ваш сервер
-            const fileData = {
-                url: URL.createObjectURL(file), // временная ссылка
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                base64: e.target.result // для небольших файлов можно использовать base64
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('https://yourdomain.com/upload.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            return {
+                url: result.url,
+                name: result.name,
+                type: result.type,
+                size: result.size
             };
-            resolve(fileData);
-        };
-        reader.readAsDataURL(file);
-    });
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        
+        // Fallback: использовать base64 для небольших файлов
+        if (file.size < 5 * 1024 * 1024) { // 5MB limit for base64
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve({
+                    url: null,
+                    base64: reader.result,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                });
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        } else {
+            throw new Error('File too large for fallback upload');
+        }
+    }
 }
 
 async function getMessageData() {
