@@ -109,18 +109,26 @@ window.sendData = function(data) {
         data.userName = `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim();
     }
     
+    // Очищаем временные URL если использовался fallback
+    if (data.file && data.file.url && data.file.url.startsWith('blob:')) {
+        data.file.url = null; // Убираем временную blob ссылку
+    }
+    
     if (tg) {
         try {
-            showStatus('Отправка...', 'loading');
+            showStatus('Отправка данных в Telegram...', 'loading');
             tg.sendData(JSON.stringify(data));
             showStatus('✅ Данные отправлены! Закрываю приложение...', 'success');
             
-            // Закрываем приложение через 2 секунды
+            console.log('Данные успешно отправлены:', {
+                ...data,
+                file: data.file ? `[File: ${data.file.name}]` : null
+            });
+            
             setTimeout(() => {
                 tg.close();
             }, 2000);
             
-            console.log('Данные успешно отправлены:', data);
         } catch (error) {
             console.error('Ошибка отправки:', error);
             showStatus('❌ Ошибка при отправке', 'error');
