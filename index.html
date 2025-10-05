@@ -2,10 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Feedback Form</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             margin: 0;
             padding: 20px;
@@ -13,12 +18,15 @@
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
             line-height: 1.5;
-            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
         }
 
         .container {
             max-width: 500px;
             margin: 0 auto;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         .user-info {
@@ -27,6 +35,7 @@
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
+            word-break: break-all;
         }
 
         .form-group {
@@ -35,54 +44,55 @@
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
 
         textarea {
             width: 100%;
-            min-height: 100px;
-            padding: 10px;
+            min-height: 120px;
+            padding: 12px;
             border: 1px solid var(--tg-theme-hint-color, #999);
             border-radius: 8px;
             resize: vertical;
             font-family: inherit;
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
-            transition: all 0.3s;
+            font-size: 16px; /* Предотвращает зум на iOS */
+            line-height: 1.4;
         }
 
         textarea:focus {
             outline: none;
             border-color: var(--tg-theme-button-color, #2481cc);
-            box-shadow: 0 0 0 2px rgba(36, 129, 204, 0.2);
         }
 
         .buttons-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .btn {
             flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
+            min-width: 100px;
+            padding: 12px 16px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: opacity 0.2s;
             font-weight: 500;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .btn:hover {
             opacity: 0.9;
-            transform: translateY(-1px);
         }
 
         .btn:active {
-            transform: translateY(0);
+            opacity: 0.8;
         }
 
         .btn-primary {
@@ -136,247 +146,279 @@
             display: block;
         }
 
+        /* Фикс для iOS */
+        @supports (-webkit-touch-callout: none) {
+            textarea {
+                font-size: 16px;
+            }
+            
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
         @media (max-width: 480px) {
             body {
                 padding: 15px;
             }
-
+            
             .btn {
-                min-width: 100px;
-                font-size: 14px;
-                padding: 10px 15px;
+                min-width: 80px;
+                font-size: 13px;
+                padding: 10px 12px;
+            }
+            
+            .container {
+                padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
             }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>📝 Форма обратной связи</h1>
+    <div class="container">
+        <h1>📝 Форма обратной связи</h1>
 
-    <div class="user-info">
-        <strong>Ваш ID:</strong> <span id="user-id">загрузка...</span><br>
-        <strong>Имя:</strong> <span id="user-name">загрузка...</span>
+        <div class="user-info">
+            <strong>Ваш ID:</strong> <span id="user-id">загрузка...</span><br>
+            <strong>Имя:</strong> <span id="user-name">загрузка...</span>
+        </div>
+
+        <form id="feedback-form">
+            <div class="form-group">
+                <label for="message">Ваше сообщение:</label>
+                <textarea 
+                    id="message" 
+                    placeholder="Напишите ваш отзыв, предложение или вопрос..." 
+                    required
+                    inputmode="text"
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Тип обращения:</label>
+                <div class="buttons-group">
+                    <button type="button" class="btn btn-primary" data-type="question">❓ Вопрос</button>
+                    <button type="button" class="btn btn-secondary" data-type="suggestion">💡 Предложение</button>
+                    <button type="button" class="btn btn-secondary" data-type="problem">⚠️ Проблема</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Приоритет:</label>
+                <div class="buttons-group">
+                    <button type="button" class="btn btn-secondary" data-priority="low">🟢 Низкий</button>
+                    <button type="button" class="btn btn-secondary" data-priority="medium">🟡 Средний</button>
+                    <button type="button" class="btn btn-primary" data-priority="high">🔴 Высокий</button>
+                </div>
+            </div>
+
+            <div class="buttons-group">
+                <button type="submit" class="btn btn-success">📤 Отправить</button>
+                <button type="button" class="btn btn-secondary" id="close-btn">❌ Закрыть</button>
+            </div>
+        </form>
+
+        <div id="status" class="status"></div>
     </div>
 
-    <form id="feedback-form">
-        <div class="form-group">
-            <label for="message">Ваше сообщение:</label>
-            <textarea id="message" placeholder="Напишите ваш отзыв, предложение или вопрос..." required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Тип обращения:</label>
-            <div class="buttons-group">
-                <button type="button" class="btn btn-primary" data-type="question">❓ Вопрос</button>
-                <button type="button" class="btn btn-secondary" data-type="suggestion">💡 Предложение</button>
-                <button type="button" class="btn btn-secondary" data-type="problem">⚠️ Проблема</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Приоритет:</label>
-            <div class="buttons-group">
-                <button type="button" class="btn btn-secondary" data-priority="low">🟢 Низкий</button>
-                <button type="button" class="btn btn-secondary" data-priority="medium">🟡 Средний</button>
-                <button type="button" class="btn btn-primary" data-priority="high">🔴 Высокий</button>
-            </div>
-        </div>
-
-        <div class="buttons-group">
-            <button type="submit" class="btn btn-success">📤 Отправить</button>
-            <button type="button" class="btn btn-secondary" id="close-btn">❌ Закрыть</button>
-        </div>
-    </form>
-
-    <div id="status" class="status"></div>
-</div>
-
-<script>
-    // Основной объект Telegram WebApp
-    const tg = window.Telegram.WebApp;
-
-    // Проверяем, доступен ли Telegram WebApp
-    if (!tg) {
-        console.error('Telegram WebApp не доступен');
-        showStatus('Ошибка: Приложение должно быть запущено внутри Telegram', 'error');
-    }
-
-    // Функция инициализации приложения
-    function initTelegramApp() {
-        try {
-            // Раскрываем приложение на весь экран:cite[6]
-            tg.expand();
-
-            // Включаем подтверждение закрытия:cite[2]
-            tg.enableClosingConfirmation();
-
-            // Получаем данные пользователя:cite[2]:cite[5]
-            const user = tg.initDataUnsafe?.user;
-            const userId = user?.id || 'Не доступно';
-            const userName = user ? `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 'Аноним';
-
-            // Обновляем интерфейс данными пользователя
-            document.getElementById('user-id').textContent = userId;
-            document.getElementById('user-name').textContent = userName;
-
-            // Персонализируем заголовок, если есть имя пользователя
-            if (user?.first_name) {
-                document.querySelector('h1').textContent = `📝 Форма обратной связи для ${user.first_name}`;
-            }
-
-            console.log('Telegram WebApp инициализирован, пользователь:', user);
-
-        } catch (error) {
-            console.error('Ошибка инициализации Telegram WebApp:', error);
-            showStatus('Ошибка инициализации приложения', 'error');
+    <script>
+        // Основной объект Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Проверяем, доступен ли Telegram WebApp
+        if (!tg) {
+            console.error('Telegram WebApp не доступен');
+            showStatus('Ошибка: Приложение должно быть запущено внутри Telegram', 'error');
         }
-    }
 
-    // Переменные для хранения выбранных значений
-    let selectedType = 'question';
-    let selectedPriority = 'high';
-
-    // Функция обновления активных кнопок
-    function updateActiveButtons(selector, activeBtn) {
-        document.querySelectorAll(selector).forEach(btn => {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
-        });
-        activeBtn.classList.remove('btn-secondary');
-        activeBtn.classList.add('btn-primary');
-    }
-
-    // Функция показа статуса
-    function showStatus(text, type) {
-        const statusEl = document.getElementById('status');
-        statusEl.textContent = text;
-        statusEl.className = `status ${type}`;
-
-        // Автоматически скрываем успешный статус через 5 секунд
-        if (type === 'success') {
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 5000);
-        }
-    }
-
-    // Функция отправки данных
-    async function sendFeedback(formData) {
-        try {
-            showStatus('Отправка данных...', 'loading');
-
-            // 🔹 ВАРИАНТ 1: Отправка через Telegram Bot (рекомендуется для кнопок клавиатуры):cite[2]
-            tg.sendData(JSON.stringify(formData));
-
-            // 🔹 ВАРИАНТ 2: Отправка на ваш backend (раскомментируйте при необходимости)
-            /*
-            const response = await fetch("https://your-backend.com/api/feedback", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    form: formData,
-                    initData: tg.initData, // Для верификации на сервере
-                    initDataUnsafe: tg.initDataUnsafe
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            */
-
-            return true;
-
-        } catch (error) {
-            console.error('Ошибка отправки:', error);
-            throw error;
-        }
-    }
-
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', function() {
-        // Инициализируем Telegram App
-        initTelegramApp();
-
-        // Обработчики для кнопок типа
-        document.querySelectorAll('[data-type]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedType = btn.dataset.type;
-                updateActiveButtons('[data-type]', btn);
-            });
-        });
-
-        // Обработчики для кнопок приоритета
-        document.querySelectorAll('[data-priority]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedPriority = btn.dataset.priority;
-                updateActiveButtons('[data-priority]', btn);
-            });
-        });
-
-        // Обработка отправки формы
-        document.getElementById('feedback-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const message = document.getElementById('message').value.trim();
-
-            if (!message) {
-                showStatus('Пожалуйста, введите сообщение', 'error');
-                return;
-            }
-
-            // Собираем данные для отправки
-            const user = tg.initDataUnsafe?.user;
-            const formData = {
-                user_id: user?.id,
-                user_name: user ? `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 'Аноним',
-                message: message,
-                type: selectedType,
-                priority: selectedPriority,
-                timestamp: new Date().toISOString(),
-                platform: tg.platform,
-                theme: tg.colorScheme
-            };
-
+        // Функция инициализации приложения
+        function initTelegramApp() {
             try {
-                // Отправляем данные
-                await sendFeedback(formData);
-
-                // Показываем успешный статус
-                showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');
-
-                // Закрываем через 2 секунды
-                setTimeout(() => {
-                    tg.close();
-                }, 2000);
-
+                // Раскрываем приложение на весь экран
+                tg.expand();
+                
+                // Включаем подтверждение закрытия
+                tg.enableClosingConfirmation();
+                
+                // ОТКЛЮЧАЕМ вертикальные свайпы - это решает проблему дергания!
+                if (tg.disableVerticalSwipes) {
+                    tg.disableVerticalSwipes();
+                }
+                
+                // Гарантируем, что страница скроллится
+                ensureDocumentIsScrollable();
+                
+                // Получаем данные пользователя
+                const user = tg.initDataUnsafe?.user;
+                const userId = user?.id || 'Не доступно';
+                const userName = user ? `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 'Аноним';
+                
+                // Обновляем интерфейс данными пользователя
+                document.getElementById('user-id').textContent = userId;
+                document.getElementById('user-name').textContent = userName;
+                
+                // Персонализируем заголовок, если есть имя пользователя
+                if (user?.first_name) {
+                    document.querySelector('h1').textContent = `📝 Форма обратной связи для ${user.first_name}`;
+                }
+                
+                console.log('Telegram WebApp инициализирован, пользователь:', user);
+                
             } catch (error) {
-                showStatus('❌ Ошибка при отправке сообщения', 'error');
+                console.error('Ошибка инициализации Telegram WebApp:', error);
+                showStatus('Ошибка инициализации приложения', 'error');
             }
+        }
+
+        // Функция для гарантии скролла страницы
+        function ensureDocumentIsScrollable() {
+            setTimeout(() => {
+                const isScrollable = document.documentElement.scrollHeight > window.innerHeight;
+                if (!isScrollable) {
+                    document.documentElement.style.minHeight = 'calc(100vh + 1px)';
+                }
+            }, 100);
+        }
+
+        // Переменные для хранения выбранных значений
+        let selectedType = 'question';
+        let selectedPriority = 'high';
+
+        // Функция обновления активных кнопок
+        function updateActiveButtons(selector, activeBtn) {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            activeBtn.classList.remove('btn-secondary');
+            activeBtn.classList.add('btn-primary');
+        }
+
+        // Функция показа статуса
+        function showStatus(text, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = text;
+            statusEl.className = `status ${type}`;
+            
+            // Автоматически скрываем успешный статус через 5 секунд
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Функция отправки данных
+        async function sendFeedback(formData) {
+            try {
+                showStatus('Отправка данных...', 'loading');
+                
+                // 🔹 ОСНОВНОЙ СПОСОБ: Отправка через Telegram Bot
+                tg.sendData(JSON.stringify(formData));
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                throw error;
+            }
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализируем Telegram App
+            initTelegramApp();
+            
+            // Обработчики для кнопок типа
+            document.querySelectorAll('[data-type]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedType = btn.dataset.type;
+                    updateActiveButtons('[data-type]', btn);
+                });
+            });
+
+            // Обработчики для кнопок приоритета
+            document.querySelectorAll('[data-priority]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectedPriority = btn.dataset.priority;
+                    updateActiveButtons('[data-priority]', btn);
+                });
+            });
+
+            // Обработка отправки формы
+            document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const message = document.getElementById('message').value.trim();
+
+                if (!message) {
+                    showStatus('Пожалуйста, введите сообщение', 'error');
+                    // Фокусируемся на поле ввода
+                    document.getElementById('message').focus();
+                    return;
+                }
+
+                // Собираем данные для отправки
+                const user = tg.initDataUnsafe?.user;
+                const formData = {
+                    user_id: user?.id,
+                    user_name: user ? `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 'Аноним',
+                    message: message,
+                    type: selectedType,
+                    priority: selectedPriority,
+                    timestamp: new Date().toISOString(),
+                    platform: tg.platform,
+                    theme: tg.colorScheme
+                };
+
+                try {
+                    // Отправляем данные
+                    await sendFeedback(formData);
+                    
+                    // Показываем успешный статус
+                    showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');
+
+                    // Закрываем через 2 секунды
+                    setTimeout(() => {
+                        tg.close();
+                    }, 2000);
+                    
+                } catch (error) {
+                    showStatus('❌ Ошибка при отправке сообщения', 'error');
+                }
+            });
+
+            // Кнопка закрытия
+            document.getElementById('close-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                tg.close();
+            });
+
+            // Изначально активируем кнопки по умолчанию
+            updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));
+            updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));
+
+            // Фокус на поле ввода после загрузки
+            setTimeout(() => {
+                document.getElementById('message').focus();
+            }, 500);
         });
 
-        // Кнопка закрытия
-        document.getElementById('close-btn').addEventListener('click', () => {
-            tg.close();
+        // Обработчики событий Telegram WebApp
+        tg.onEvent('themeChanged', () => {
+            // При изменении темы перезагружаем страницу для применения стилей
+            location.reload();
         });
 
-        // Изначально активируем кнопки по умолчанию
-        updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));
-        updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));
-    });
+        // Предотвращаем стандартное поведение жестов
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
-    // Обработчики событий Telegram WebApp:cite[2]
-    tg.onEvent('themeChanged', () => {
-        // При изменении темы перезагружаем страницу для применения стилей
-        location.reload();
-    });
-
-    tg.onEvent('viewportChanged', (event) => {
-        console.log('Viewport changed:', event);
-    });
-
-</script>
+    </script>
 </body>
 </html>
