@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Форма обратной связи</title>
+    <title>Создание этапа</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -19,6 +19,7 @@
             line-height: 1.5;
             padding: 20px;
             min-height: 100vh;
+            overflow-y: auto;
         }
 
         .container {
@@ -30,11 +31,11 @@
             background: #fff3cd;
             border: 1px solid #ffeaa7;
             color: #856404;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            display: none;
+            font-size: 14px;
         }
 
         .user-info {
@@ -55,26 +56,17 @@
             font-weight: 600;
         }
 
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            resize: vertical;
-            font-family: inherit;
-            font-size: 16px;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #007bff;
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
         .buttons-group {
             display: flex;
+            flex-direction: column;
             gap: 10px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
         .btn {
@@ -84,8 +76,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.2s;
-            flex: 1;
-            min-width: 120px;
+            text-align: left;
         }
 
         .btn:hover {
@@ -115,6 +106,69 @@
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .stage-content {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .answer-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .answer-option input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+
+        .map-container {
+            height: 300px;
+            background: #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #dc3545;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+
+        .map-instructions {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
         }
 
         .status {
@@ -155,7 +209,6 @@
             }
             
             .btn {
-                min-width: 100px;
                 font-size: 14px;
                 padding: 10px 15px;
             }
@@ -164,11 +217,11 @@
 </head>
 <body>
     <div class="container">
-        <div id="warning-banner" class="warning-banner">
-            ⚠️ Это приложение должно быть запущено внутри Telegram. Некоторые функции могут не работать.
+        <div class="warning-banner">
+            ⚠️ Если приложение запущено не из Telegram, некоторые функции могут не работать. Рекомендуем использовать приложение Telegram.
         </div>
 
-        <h1>📝 Форма обратной связи</h1>
+        <h1>📝 Создание этапа</h1>
 
         <div class="user-info">
             <strong>Ваш ID:</strong> <span id="user-id">не определен</span><br>
@@ -176,211 +229,357 @@
             <strong>Платформа:</strong> <span id="platform-info">проверка...</span>
         </div>
 
-        <form id="feedback-form">
+        <div class="form-group">
+            <div class="section-title">*Выберите тип этапа*</div>
+            <div class="buttons-group">
+                <button type="button" class="btn btn-secondary" data-type="message">📨 Сообщение</button>
+                <button type="button" class="btn btn-secondary" data-type="quiz">❓ Викторина</button>
+                <button type="button" class="btn btn-secondary" data-type="geo">📍 Гео точка</button>
+                <button type="button" class="btn btn-secondary" data-type="riddle">🔍 Загадка</button>
+            </div>
+        </div>
+
+        <!-- Контент для типа "Сообщение" -->
+        <div id="message-content" class="stage-content">
             <div class="form-group">
-                <label for="message">Ваше сообщение:</label>
+                <label for="message-text">Текст сообщения:</label>
                 <textarea 
-                    id="message" 
-                    placeholder="Опишите вашу проблему, предложение или задайте вопрос..." 
-                    required
+                    id="message-text" 
+                    placeholder="Введите текст сообщения..." 
+                    rows="5"
                 ></textarea>
             </div>
+            <button type="button" class="btn btn-success" id="send-message-btn" disabled>📤 Отправить</button>
+        </div>
 
+        <!-- Контент для типа "Викторина" -->
+        <div id="quiz-content" class="stage-content">
             <div class="form-group">
-                <label>Тип обращения:</label>
-                <div class="buttons-group">
-                    <button type="button" class="btn btn-primary" data-type="question">❓ Вопрос</button>
-                    <button type="button" class="btn btn-secondary" data-type="suggestion">💡 Предложение</button>
-                    <button type="button" class="btn btn-secondary" data-type="problem">⚠️ Проблема</button>
+                <label for="quiz-question">Вопрос:</label>
+                <input type="text" id="quiz-question" placeholder="Введите вопрос викторины...">
+            </div>
+            
+            <div class="form-group">
+                <label>Варианты ответов:</label>
+                <div id="answer-options">
+                    <div class="answer-option">
+                        <input type="text" placeholder="Вариант ответа 1" class="quiz-answer">
+                        <input type="checkbox" class="correct-answer">
+                        <label>Верный</label>
+                    </div>
+                    <div class="answer-option">
+                        <input type="text" placeholder="Вариант ответа 2" class="quiz-answer">
+                        <input type="checkbox" class="correct-answer">
+                        <label>Верный</label>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="add-option-btn">+ Добавить вариант</button>
+            </div>
+            
+            <button type="button" class="btn btn-success" id="send-quiz-btn" disabled>📤 Отправить</button>
+        </div>
+
+        <!-- Контент для типа "Гео точка" -->
+        <div id="geo-content" class="stage-content">
+            <div class="map-container" id="map">
+                <div class="map-instructions">
+                    Нажмите на карту, чтобы установить метку
                 </div>
             </div>
-
             <div class="form-group">
-                <label>Срочность:</label>
-                <div class="buttons-group">
-                    <button type="button" class="btn btn-secondary" data-priority="low">🟢 Не срочно</button>
-                    <button type="button" class="btn btn-secondary" data-priority="medium">🟡 Средняя</button>
-                    <button type="button" class="btn btn-primary" data-priority="high">🔴 Срочно</button>
-                </div>
+                <label>Координаты:</label>
+                <input type="text" id="coordinates" placeholder="Координаты появятся здесь после выбора точки" readonly>
             </div>
+            <button type="button" class="btn btn-success" id="send-geo-btn" disabled>📤 Отправить</button>
+        </div>
 
-            <div class="buttons-group">
-                <button type="submit" class="btn btn-success" id="submit-btn">📤 Отправить</button>
-                <button type="button" class="btn btn-danger" id="close-btn">❌ Закрыть</button>
+        <!-- Контент для типа "Загадка" -->
+        <div id="riddle-content" class="stage-content">
+            <div class="form-group">
+                <label for="riddle-text">Текст загадки:</label>
+                <textarea 
+                    id="riddle-text" 
+                    placeholder="Введите текст загадки..." 
+                    rows="5"
+                ></textarea>
             </div>
-        </form>
+            <div class="form-group">
+                <label for="riddle-answer">Ответ на загадку:</label>
+                <input type="text" id="riddle-answer" placeholder="Введите правильный ответ...">
+            </div>
+            <button type="button" class="btn btn-success" id="send-riddle-btn" disabled>📤 Отправить</button>
+        </div>
 
         <div id="status" class="status"></div>
     </div>
 
     <script>
-        // 🔍 Функция проверки запуска в Telegram WebApp
-        function isTelegramWebApp() {
-            // Проверяем наличие объекта Telegram WebApp
-            if (typeof window.Telegram === 'undefined' || 
-                typeof window.Telegram.WebApp === 'undefined') {
-                return false;
-            }
-            
-            const tg = window.Telegram.WebApp;
-            
-            // Проверяем основные свойства Telegram WebApp
-            const hasRequiredProps = 
-                typeof tg.initData === 'string' &&
-                typeof tg.initDataUnsafe === 'object' &&
-                typeof tg.platform === 'string' &&
-                typeof tg.colorScheme === 'string' &&
-                typeof tg.expand === 'function' &&
-                typeof tg.close === 'function';
-            
-            // Дополнительная проверка по user agent (из статьи Habr)
-            const userAgent = navigator.userAgent.toLowerCase();
-            const isTelegramUserAgent = userAgent.includes('telegram') || 
-                                      userAgent.includes('webview');
-            
-            return hasRequiredProps && isTelegramUserAgent;
-        }
-
         // 🚀 Основная инициализация
         function initializeApp() {
-            const isTelegram = isTelegramWebApp();
-            const warningBanner = document.getElementById('warning-banner');
-            const submitBtn = document.getElementById('submit-btn');
+            const tg = window.Telegram?.WebApp;
             
-            // Показываем предупреждение если не в Telegram
-            if (!isTelegram) {
-                warningBanner.style.display = 'block';
-                submitBtn.disabled = true;
-                submitBtn.textContent = '⚠️ Только для Telegram';
+            if (tg) {
+                try {
+                    tg.expand();
+                    tg.enableClosingConfirmation();
+                    
+                    // Получаем данные пользователя
+                    const user = tg.initDataUnsafe?.user;
+                    const userId = user?.id || 'Не доступно';
+                    const userName = user ? 
+                        `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 
+                        'Аноним';
+                    
+                    // Обновляем интерфейс
+                    document.getElementById('user-id').textContent = userId;
+                    document.getElementById('user-name').textContent = userName;
+                    document.getElementById('platform-info').textContent = 
+                        `${tg.platform} • ${tg.colorScheme} тема`;
+                    
+                    console.log('Telegram WebApp инициализирован');
+                    return tg;
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации Telegram WebApp:', error);
+                    return null;
+                }
+            } else {
                 document.getElementById('platform-info').textContent = 'Браузер (вне Telegram)';
-                return null;
-            }
-            
-            // Инициализация Telegram WebApp
-            const tg = window.Telegram.WebApp;
-            
-            try {
-                tg.expand();
-                tg.enableClosingConfirmation();
-                
-                // Получаем данные пользователя
-                const user = tg.initDataUnsafe?.user;
-                const userId = user?.id || 'Не доступно';
-                const userName = user ? 
-                    `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 
-                    'Аноним';
-                
-                // Обновляем интерфейс
-                document.getElementById('user-id').textContent = userId;
-                document.getElementById('user-name').textContent = userName;
-                document.getElementById('platform-info').textContent = 
-                    `${tg.platform} • ${tg.colorScheme} тема`;
-                
-                console.log('Telegram WebApp инициализирован');
-                return tg;
-                
-            } catch (error) {
-                console.error('Ошибка инициализации Telegram WebApp:', error);
-                warningBanner.style.display = 'block';
-                warningBanner.textContent = '⚠️ Ошибка инициализации Telegram WebApp';
                 return null;
             }
         }
 
         // 📝 Логика формы
-        let selectedType = 'question';
-        let selectedPriority = 'high';
-
-        function updateActiveButtons(selector, activeBtn) {
-            document.querySelectorAll(selector).forEach(btn => {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-secondary');
-            });
-            activeBtn.classList.remove('btn-secondary');
-            activeBtn.classList.add('btn-primary');
-        }
+        let selectedType = null;
+        let markerCoordinates = null;
+        let answerOptionsCount = 2;
 
         function showStatus(text, type) {
             const statusEl = document.getElementById('status');
             statusEl.textContent = text;
             statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+
+        function hideAllStageContent() {
+            document.querySelectorAll('.stage-content').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+
+        function updateActiveButtons() {
+            document.querySelectorAll('[data-type]').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            if (selectedType) {
+                const activeBtn = document.querySelector(`[data-type="${selectedType}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.remove('btn-secondary');
+                    activeBtn.classList.add('btn-primary');
+                }
+            }
+        }
+
+        function showStageContent(type) {
+            hideAllStageContent();
+            const contentEl = document.getElementById(`${type}-content`);
+            if (contentEl) {
+                contentEl.style.display = 'block';
+            }
+        }
+
+        function validateMessageForm() {
+            const messageText = document.getElementById('message-text').value.trim();
+            const sendBtn = document.getElementById('send-message-btn');
+            sendBtn.disabled = !messageText;
+        }
+
+        function validateQuizForm() {
+            const question = document.getElementById('quiz-question').value.trim();
+            const answers = document.querySelectorAll('.quiz-answer');
+            let hasAnswers = false;
+            let hasCorrect = false;
+            
+            answers.forEach(answer => {
+                if (answer.value.trim()) {
+                    hasAnswers = true;
+                    const checkbox = answer.parentElement.querySelector('.correct-answer');
+                    if (checkbox.checked) {
+                        hasCorrect = true;
+                    }
+                }
+            });
+            
+            const sendBtn = document.getElementById('send-quiz-btn');
+            sendBtn.disabled = !(question && hasAnswers && hasCorrect);
+        }
+
+        function addAnswerOption() {
+            if (answerOptionsCount >= 10) return;
+            
+            answerOptionsCount++;
+            const optionsContainer = document.getElementById('answer-options');
+            const newOption = document.createElement('div');
+            newOption.className = 'answer-option';
+            newOption.innerHTML = `
+                <input type="text" placeholder="Вариант ответа ${answerOptionsCount}" class="quiz-answer">
+                <input type="checkbox" class="correct-answer">
+                <label>Верный</label>
+            `;
+            optionsContainer.appendChild(newOption);
+            
+            // Добавляем обработчики событий для новых полей
+            newOption.querySelector('.quiz-answer').addEventListener('input', validateQuizForm);
+            newOption.querySelector('.correct-answer').addEventListener('change', validateQuizForm);
+            
+            // Обновляем кнопку добавления, если достигнут максимум
+            if (answerOptionsCount >= 10) {
+                document.getElementById('add-option-btn').disabled = true;
+            }
+        }
+
+        function initMap() {
+            const map = document.getElementById('map');
+            const coordinatesInput = document.getElementById('coordinates');
+            const sendBtn = document.getElementById('send-geo-btn');
+            
+            // Обработчик клика по карте
+            map.addEventListener('click', function(e) {
+                // Удаляем существующую метку
+                const existingMarker = document.querySelector('.map-marker');
+                if (existingMarker) {
+                    existingMarker.remove();
+                }
+                
+                // Создаем новую метку
+                const marker = document.createElement('div');
+                marker.className = 'map-marker';
+                marker.style.left = e.offsetX + 'px';
+                marker.style.top = e.offsetY + 'px';
+                map.appendChild(marker);
+                
+                // Сохраняем координаты (в реальном приложении здесь будет преобразование в реальные координаты)
+                markerCoordinates = {
+                    x: e.offsetX,
+                    y: e.offsetY
+                };
+                
+                // Обновляем поле координат
+                coordinatesInput.value = `X: ${e.offsetX}, Y: ${e.offsetY}`;
+                
+                // Активируем кнопку отправки
+                sendBtn.disabled = false;
+            });
+        }
+
+        function validateRiddleForm() {
+            const riddleText = document.getElementById('riddle-text').value.trim();
+            const riddleAnswer = document.getElementById('riddle-answer').value.trim();
+            const sendBtn = document.getElementById('send-riddle-btn');
+            sendBtn.disabled = !(riddleText && riddleAnswer);
+        }
+
+        function sendData(data) {
+            const tg = window.Telegram?.WebApp;
+            
+            if (tg) {
+                try {
+                    showStatus('Отправка...', 'loading');
+                    tg.sendData(JSON.stringify(data));
+                    showStatus('✅ Данные отправлены!', 'success');
+                } catch (error) {
+                    console.error('Ошибка отправки:', error);
+                    showStatus('❌ Ошибка при отправке', 'error');
+                }
+            } else {
+                showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
+                console.log('Данные для отправки:', data);
+            }
         }
 
         // 🎯 Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             const tg = initializeApp();
             
-            // Обработчики кнопок типа
+            // Обработчики кнопок выбора типа этапа
             document.querySelectorAll('[data-type]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     selectedType = btn.dataset.type;
-                    updateActiveButtons('[data-type]', btn);
+                    updateActiveButtons();
+                    showStageContent(selectedType);
                 });
             });
 
-            // Обработчики кнопок приоритета
-            document.querySelectorAll('[data-priority]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    selectedPriority = btn.dataset.priority;
-                    updateActiveButtons('[data-priority]', btn);
-                });
-            });
-
-            // Обработка отправки формы
-            document.getElementById('feedback-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const message = document.getElementById('message').value.trim();
-
-                if (!message) {
-                    showStatus('Пожалуйста, введите сообщение', 'error');
-                    return;
-                }
-
-                // Собираем данные
-                const formData = {
-                    user_id: tg?.initDataUnsafe?.user?.id,
-                    user_name: tg?.initDataUnsafe?.user ? 
-                        `${tg.initDataUnsafe.user.first_name || ''}${tg.initDataUnsafe.user.last_name ? ' ' + tg.initDataUnsafe.user.last_name : ''}`.trim() : 
-                        'Аноним',
-                    message: message,
-                    type: selectedType,
-                    priority: selectedPriority,
+            // Обработчики для формы "Сообщение"
+            document.getElementById('message-text').addEventListener('input', validateMessageForm);
+            document.getElementById('send-message-btn').addEventListener('click', () => {
+                const data = {
+                    type: 'message',
+                    text: document.getElementById('message-text').value.trim(),
                     timestamp: new Date().toISOString()
                 };
+                sendData(data);
+            });
 
-                if (tg) {
-                    // 🔥 Отправка через Telegram WebApp (для reply-клавиатуры)
-                    try {
-                        showStatus('Отправка...', 'loading');
-                        tg.sendData(JSON.stringify(formData));
-                        showStatus('✅ Сообщение отправлено! Закрываю приложение...', 'success');
-                        
-                        setTimeout(() => {
-                            tg.close();
-                        }, 2000);
-                        
-                    } catch (error) {
-                        console.error('Ошибка отправки:', error);
-                        showStatus('❌ Ошибка при отправке', 'error');
+            // Обработчики для формы "Викторина"
+            document.getElementById('quiz-question').addEventListener('input', validateQuizForm);
+            document.querySelectorAll('.quiz-answer').forEach(input => {
+                input.addEventListener('input', validateQuizForm);
+            });
+            document.querySelectorAll('.correct-answer').forEach(checkbox => {
+                checkbox.addEventListener('change', validateQuizForm);
+            });
+            document.getElementById('add-option-btn').addEventListener('click', addAnswerOption);
+            document.getElementById('send-quiz-btn').addEventListener('click', () => {
+                const question = document.getElementById('quiz-question').value.trim();
+                const answers = [];
+                
+                document.querySelectorAll('.answer-option').forEach(option => {
+                    const answerText = option.querySelector('.quiz-answer').value.trim();
+                    const isCorrect = option.querySelector('.correct-answer').checked;
+                    
+                    if (answerText) {
+                        answers.push({
+                            text: answerText,
+                            correct: isCorrect
+                        });
                     }
-                } else {
-                    showStatus('⚠️ Приложение должно быть запущено в Telegram', 'error');
-                }
+                });
+                
+                const data = {
+                    type: 'quiz',
+                    question: question,
+                    answers: answers,
+                    timestamp: new Date().toISOString()
+                };
+                sendData(data);
             });
 
-            // Кнопка закрытия
-            document.getElementById('close-btn').addEventListener('click', () => {
-                if (tg) {
-                    tg.close();
-                } else {
-                    showStatus('⚠️ Приложение должно быть запущено в Telegram', 'error');
-                }
+            // Инициализация карты для "Гео точки"
+            initMap();
+            document.getElementById('send-geo-btn').addEventListener('click', () => {
+                const data = {
+                    type: 'geo',
+                    coordinates: markerCoordinates,
+                    timestamp: new Date().toISOString()
+                };
+                sendData(data);
             });
 
-            // Изначально активируем кнопки по умолчанию
-            updateActiveButtons('[data-type]', document.querySelector('[data-type="question"]'));
-            updateActiveButtons('[data-priority]', document.querySelector('[data-priority="high"]'));
+            // Обработчики для формы "Загадка"
+            document.getElementById('riddle-text').addEventListener('input', validateRiddleForm);
+            document.getElementById('riddle-answer').addEventListener('input', validateRiddleForm);
+            document.getElementById('send-riddle-btn').addEventListener('click', () => {
+                const data = {
+                    type: 'riddle',
+                    text: document.getElementById('riddle-text').value.trim(),
+                    answer: document.getElementById('riddle-answer').value.trim(),
+                    timestamp: new Date().toISOString()
+                };
+                sendData(data);
+            });
         });
     </script>
 </body>
