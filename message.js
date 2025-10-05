@@ -1,5 +1,3 @@
-javascript
-
 // Логика для типа "Сообщение"
 function initMessage() {
     validateMessageForm();
@@ -7,8 +5,12 @@ function initMessage() {
 
 function validateMessageForm() {
     const messageText = document.getElementById('message-text').value.trim();
+    const fileInput = document.getElementById('message-file');
+    const hasFile = fileInput.files.length > 0;
+    
     const sendBtn = document.getElementById('send-message-btn');
-    sendBtn.disabled = !messageText;
+    // Кнопка активна если есть текст ИЛИ файл
+    sendBtn.disabled = !(messageText || hasFile);
 }
 
 function getMessageData() {
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             fileInfo.innerHTML = '';
         }
+        validateMessageForm();
     });
     
     document.getElementById('send-message-btn').addEventListener('click', () => {
