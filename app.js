@@ -115,3 +115,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация сообщений при завершении
     initCompletionMessages();
 });
+
+// Глобальная функция для отправки данных (доступна из всех файлов)
+window.sendData = function(data) {
+    if (tg) {
+        try {
+            showStatus('Отправка...', 'loading');
+            tg.sendData(JSON.stringify(data));
+            showStatus('✅ Данные отправлены!', 'success');
+            console.log('Данные успешно отправлены:', data);
+        } catch (error) {
+            console.error('Ошибка отправки:', error);
+            showStatus('❌ Ошибка при отправке', 'error');
+        }
+    } else {
+        showStatus('⚠️ Данные готовы к отправке (вне Telegram)', 'success');
+        console.log('Данные для отправки (вне Telegram):', data);
+    }
+}
