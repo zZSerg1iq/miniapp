@@ -18,20 +18,7 @@ function initializeApp() {
             tg.enableClosingConfirmation();
             
             console.log('Telegram WebApp данные:', tg.initDataUnsafe);
-            
-            // Получаем данные пользователя
-            const user = tg.initDataUnsafe.user;
-            const userId = user?.id ? user.id.toString() : 'Не доступно';
-            const userName = user ? 
-                `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim() : 
-                'Аноним';
-            
-            // Обновляем интерфейс
-            document.getElementById('user-id').textContent = userId;
-            document.getElementById('user-name').textContent = userName || 'Аноним';
-            document.getElementById('platform-info').textContent = 
-                `${tg.platform} • ${tg.colorScheme} тема`;
-            
+           
             console.log('Telegram WebApp инициализирован:', { userId, userName });
             return tg;
             
