@@ -17,9 +17,13 @@ function initializeApp() {
             tg.expand();
             tg.enableClosingConfirmation();
             
+            // ✅ ВАЖНО: Указываем версию приложения для избежания кеширования
+            tg.setHeaderColor('#007bff');
+            tg.backgroundColor = '#ffffff';
+            
             console.log('Telegram WebApp данные:', tg.initDataUnsafe);
-           
-            console.log('Telegram WebApp инициализирован:', { userId, userName });
+            
+            console.log('Telegram WebApp инициализирован');
             return tg;
             
         } catch (error) {
@@ -31,6 +35,15 @@ function initializeApp() {
         console.warn('Telegram WebApp не обнаружен или данные не переданы');
         showFallbackInfo();
         return null;
+    }
+}
+
+// Добавьте эту функцию для принудительного обновления
+function setupAppVersion() {
+    if (window.Telegram?.WebApp) {
+        // Устанавливаем версию на основе timestamp для избежания кеширования
+        const version = Date.now().toString();
+        window.Telegram.WebApp.version = version;
     }
 }
 
@@ -143,4 +156,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initCompletionMessages === 'function') {
         initCompletionMessages();
     }
+});
+
+
+// В конец app.js добавьте:
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Загрузка приложения...');
+    setupAppVersion(); // ✅ Вызываем перед инициализацией
+    initializeApp();
+    
+    // остальной код без изменений
 });
