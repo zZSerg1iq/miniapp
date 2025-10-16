@@ -35,10 +35,6 @@ function initializeApp() {
 }
 
 function showFallbackInfo() {
-    document.getElementById('user-id').textContent = 'Не доступно';
-    document.getElementById('user-name').textContent = 'Аноним';
-    document.getElementById('platform-info').textContent = 'Браузер (вне Telegram)';
-    
     // Показываем предупреждение
     const warningBanner = document.querySelector('.warning-banner');
     if (warningBanner) {
