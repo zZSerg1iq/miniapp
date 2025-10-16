@@ -20,6 +20,8 @@ function initializeApp() {
             // ✅ ВАЖНО: Указываем версию приложения для избежания кеширования
             tg.setHeaderColor('#007bff');
             tg.backgroundColor = '#ffffff';
+
+            tg.MainButton.hide();
             
             console.log('Telegram WebApp данные:', tg.initDataUnsafe);
             
